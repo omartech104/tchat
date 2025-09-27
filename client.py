@@ -1,14 +1,39 @@
 import socket
-from rich.console import Console
+import threading
 
-cosnole = Console()
+nickname = input("Choose your name for the chat : ")
 
+# Connecting To Server
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect(("127.0.0.1", 5500))
 
-client.connect(("localhost", 9999))
 
-done = False
+def receive():
+    while True:
+        try:
+            # Receive Message From Server
+            # If 'NAME'
+            message = client.recv(1024).decode("ascii")
+            if message == "NAME":
+                client.send(nickname.encode("ascii"))
+            else:
+                print(message)
+        except:
+            # Close Connection When Error
+            print("An error occured!")
+            client.close()
+            break
 
-while not done:
-    client.send(input("> ").encode('utf-8'))
-    msg = client.recv(1024).decode('utf-8')
+
+# Sending Messages To Server
+def write():
+    while True:
+        message = "{}: {}".format(nickname, input(""))
+        client.send(message.encode("ascii"))
+
+
+receive_thread = threading.Thread(target=receive)
+receive_thread.start()
+
+write_thread = threading.Thread(target=write)
+write_thread.start()
