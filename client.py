@@ -1,5 +1,9 @@
 import socket
 import threading
+from rich.console import Console
+from datetime import datetime
+
+console = Console()
 
 nickname = input("Choose your name for the chat : ")
 
@@ -11,24 +15,28 @@ client.connect(("127.0.0.1", 5500))
 def receive():
     while True:
         try:
-            # Receive Message From Server
-            # If 'NAME'
             message = client.recv(1024).decode("ascii")
             if message == "NAME":
                 client.send(nickname.encode("ascii"))
             else:
-                print(message)
+                timestamp = datetime.now().strftime("%H:%M:%S")
+                # Style messages depending on content
+                if "joined the chat" in message.lower():
+                    console.print(f"[{timestamp}] {message}", style="bold green")
+                elif "left the chat" in message.lower():
+                    console.print(f"[{timestamp}] {message}", style="bold red")
+                else:
+                    console.print(f"[{timestamp}] {message}", style="bold cyan")
         except:
-            # Close Connection When Error
-            print("An error occured!")
+            console.print("[bold red]An error occurred![/]")
             client.close()
             break
 
 
-# Sending Messages To Server
 def write():
     while True:
-        message = "{}: {}".format(nickname, input(""))
+        msg_content = input("")
+        message = f"[bold yellow]{nickname}[/]: {msg_content}"
         client.send(message.encode("ascii"))
 
 
@@ -37,3 +45,4 @@ receive_thread.start()
 
 write_thread = threading.Thread(target=write)
 write_thread.start()
+

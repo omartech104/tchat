@@ -1,5 +1,8 @@
 import socket
 import threading
+from rich.console import Console
+
+console = Console()
 
 host = "127.0.0.1"
 port = 5500
@@ -38,7 +41,7 @@ def receive():
     while True:
         # Accept Connection
         client, address = server.accept()
-        print("Connected with {}".format(str(address)))
+        console.print("Connected with {}".format(str(address)))
 
         # Request And Store Nickname
         client.send("NAME".encode("ascii"))
@@ -47,7 +50,7 @@ def receive():
         clients.append(client)
 
         # Print And Broadcast Nickname
-        print("Nickname is {}".format(nickname))
+        console.print("Nickname is {}".format(nickname))
         broadcast("{} joined!".format(nickname).encode("ascii"))
         client.send("Connected to server!".encode("ascii"))
 
